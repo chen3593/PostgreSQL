@@ -1,0 +1,21 @@
+1. Group Member:
+
+Raoyin Chen	chen3593	4931661
+Jinghuan Jiang	jiang671	4881506
+
+2. Source code files that we modified: 
+postgressql-9.2.1/src/backend/storage/buffer/freelist.c
+postgressql-9.2.1/src/backend/storage/buffer/buf_init.c
+postgressql-9.2.1/src/backend/storage/buffer/bufmgr.c
+postgressql-9.2.1/src/include/storage/buf_internals.h
+
+
+3. At first, we define a flag LRU control which replace policy that we want to use. If LRU is set to true, LRU policy will be used, otherwise, clock sweep policy will be used. Secondly, we need to implement the LRU algorithm. First we need to modify the fields of BufferDesc. We add next and prev pointers to BufferDesc to make BufferDesc a node of a doubly-linked list to simulate a queue. Then, we define some constants in freelist.c to specify if a BufferDesc is at the head of the queue or at the end of the queue or not in queue. After that, we implement two functions: 
+1. void StrategyLRUEnqueue(volatile BufferDesc *buf): it will put a buffer into LRU queue, It should be called when a buffer is unpinned. The buffer will be put at head position of the queue since it is LRU.  
+2. void StrategyLRUDequeue(volatile BufferDesc *buf): It will remove a buffer from LRU queue if it exists in the queue. It should be called when a buffer is pinned. 
+Finally, if we need to replace a buffer when the freelist is empty, just peak one from the head of the LRU queue.
+
+*Search "CSci4707" in the source files for the changes we have made. All changes are commented
+
+citation: http://www.inf.uni-konstanz.de/dbis/teaching/ss04/architektur-von-dbms/download/local/buffermanager.pdf
+The idea of using doubly-linkedlist to implement a queue, when to enqueue/dequeue, and how to maintain the queue are referred to this pdf file.
